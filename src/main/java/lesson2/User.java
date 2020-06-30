@@ -1,15 +1,21 @@
 package lesson2;
 import lombok.Data;
 
-@Data
-public class User {
-    private int age, id;
-    private String name, address;
+import java.io.Serializable;
 
-    public User(int age, int id, String name, String address) {
-        this.age = age;
+@Data
+public class User implements Serializable {
+    private int id;
+    private String login, password;
+
+    public User(String login, String password) {
+        this.login = login;
+        this.password = password;
+    }
+
+    public User(int id, String login, String password) {
         this.id = id;
-        this.name = name;
-        this.address = address;
+        this.login = login;
+        this.password = password;
     }
 }

@@ -31,8 +31,8 @@ public class DBHelper {
     }
 
     public void insert(User user) throws SQLException {
-        String insertQuery = String.format("insert into users values(%d, %d, '%s', '%s');",
-                user.getId(), user.getAge(), user.getName(), user.getAddress());
+        String insertQuery = String.format("insert into users values(%d, '%s', '%s');",
+                user.getId(), user.getLogin(), user.getPassword());
         stmt.execute(insertQuery);
     }
 
@@ -40,24 +40,22 @@ public class DBHelper {
     }
 
     public void init() throws SQLException {
-        String createTable = "create table if not exists users(id INTEGER, age INTEGER, name TEXT, address TEXT);";
+        String createTable = "create table if not exists users(id INTEGER, login TEXT, password TEXT);";
         stmt.execute(createTable);
     }
 
     public void update(User user) {
+
     }
 
-    public List<User> select() throws SQLException {
-        String query = "select * from users;";
+    public User select(String login) throws SQLException {
+        String query = String.format("select * from users where login = '%s';", login);
         ResultSet rs = stmt.executeQuery(query);
-        ArrayList<User> users = new ArrayList<>();
+        User user = null;
         while (rs.next()) {
-            String name = rs.getString("name");
-            String address = rs.getString("address");
-            int id = rs.getInt("id");
-            int age = rs.getInt("age");
-            users.add(new User(age, id, name, address));
+            String password = rs.getString("password");
+            user = new User(login, password);
         }
-        return users;
+        return user;
     }
 }

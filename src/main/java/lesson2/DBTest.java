@@ -7,7 +7,8 @@ public class DBTest {
         DBHelper helper = new DBHelper();
         helper.connect();
         helper.init();
-        helper.insert(new User(19, 2, "Petr", "Zagogrodniy 12-19"));
-        System.out.println(helper.select());
+        helper.insert(new User(1, "Petr", "123"));
+        helper.insert(new User(2, "Ivan", "123"));
+        System.out.println(helper.select("Petr"));
     }
 }
