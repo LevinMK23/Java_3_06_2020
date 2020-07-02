@@ -1,10 +1,12 @@
-package homework2.client;
+package homework.client;
+
+import homework.utils.Logger;
+import homework.api.Auth;
+import homework.api.Event;
+import homework.api.Message;
 
 import com.google.gson.Gson;
-import homework2.utils.Logger;
-import homework2.api.Auth;
-import homework2.api.Event;
-import homework2.api.Message;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -19,9 +21,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 
 public class ClientController implements Initializable {
     @FXML
@@ -30,6 +32,8 @@ public class ClientController implements Initializable {
     TextField msgField;
     @FXML
     TextField nameField;
+    @FXML
+    TextField eventField;
     @FXML
     HBox upperPan;
     @FXML
@@ -50,59 +54,37 @@ public class ClientController implements Initializable {
     private DataOutputStream out;
     private Gson gson = new Gson();
     private Logger log = new Logger(ClientController.class);
-    private AtomicBoolean isAuthorised = new AtomicBoolean();
+    private boolean isAuthorised = false;
+    private ClientWorker worker = new ClientWorker();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setAuthorised(false);
         try {
             clientSocket = new Socket(IP, PORT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Thread timer = new Thread(() -> {
-            try {
-                Thread.sleep(30000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (!isAuthorised.get()) {
+            log.appInfo("initialize", "Установлено подключение к серверу " + clientSocket.getInetAddress() + ":" + clientSocket.getPort());
+            Thread waitLogin = new Thread(() -> {
                 try {
-                    clientSocket.close();
-                    isConnected = false;
-                    log.appInfo("initialize", "Подключение закрыто по таймауту");
-                } catch (IOException e) {
-                    log.appError("initialize", "Ошибка закрытия подключения, " + e.getMessage());
+                    Thread.sleep(30000);
+                    if (!isAuthorised) {
+                        clientSocket.close();
+                        isConnected = false;
+                        log.appInfo("initialize", "Подключение закрыто по таймауту");
+                    }
+                } catch (Exception e) {
+                    log.appError("initialize", "Ошибка во время работы, " + e.getMessage());
                 }
-            }
-        });
-        timer.setDaemon(true);
-        timer.start();
-    }
-
-    private void setAuthorised(boolean isAuthorised) {
-        this.isAuthorised.set(isAuthorised);
-        if (!isAuthorised) {
-            upperPan.setVisible(true);
-            upperPan.setManaged(true);
-            bottomPan.setVisible(false);
-            bottomPan.setManaged(false);
-            clientList.setVisible(false);
-            clientList.setManaged(false);
-        } else {
-            upperPan.setVisible(false);
-            upperPan.setManaged(false);
-            bottomPan.setVisible(true);
-            bottomPan.setManaged(true);
-            clientList.setVisible(true);
-            clientList.setManaged(true);
+            });
+        waitLogin.setDaemon(true);
+        waitLogin.start();
+        } catch (Exception e) {
+            log.appError("initialize", "Ошибка подключения к серверу, " + e.getMessage());
         }
     }
 
     public void login() {
         try {
-            if (clientSocket.isClosed()) {
+            if (Objects.isNull(clientSocket) || clientSocket.isClosed()) {
                 clientSocket = new Socket(IP, PORT);
             }
             if (isConnected) {
@@ -117,52 +99,35 @@ public class ClientController implements Initializable {
         }
     }
 
-    private void authentication() throws Exception {
-        Auth auth = new Auth(loginField.getText(), passwordField.getText());
-        out.writeUTF(gson.toJson(new Message("/auth", gson.toJson(auth))));
-        log.appInfo("login", "Пользователь " + auth.getLogin() + " пробует залогиниться");
-        loginField.clear();
-        passwordField.clear();
-        out.flush();
-    }
-
     private void connect() {
         try {
             in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
             setAuthorised(false);
-
             Thread t1 = new Thread(() -> {
                 try {
                     while (true) {
                         Message message = gson.fromJson(in.readUTF(), Message.class);
                         switch (message.getPath()) {
                             case "/authOK": {
-                                setAuthorised(true);
+                                checkHistory();
                                 log.appInfo("login", "Пользователь авторизован");
+                                setAuthorised(true);
                                 break;
                             }
                             case "/newMessage": {
                                 chatArea.appendText(message.getBody());
+                                worker.writeHistory(message.getBody());
                                 break;
                             }
                             case "/clientList": {
                                 String[] clients = message.getBody().replace("[", "").replace("]", "").split(",");
-                                Platform.runLater(() -> {
-                                    clientList.getItems().clear();
-                                    for (String client : clients) {
-                                        clientList.getItems().add(client.replaceAll(" ", ""));
-                                    }
-                                });
+                                updateClientList(clients);
                                 break;
                             }
                             case "/event": {
                                 Event event = gson.fromJson(message.getBody(), Event.class);
-                                if (event.getType().equals(Event.Type.info)) {
-                                    log.appInfo("connect", event.getMessage());
-                                } else if (event.getType().equals(Event.Type.error)) {
-                                    log.appError("connect", event.getMessage());
-                                }
+                                event(event);
                                 break;
                             }
                             default:
@@ -170,8 +135,8 @@ public class ClientController implements Initializable {
                                 break;
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    log.appError("connect", "Ошибка принятия сообщения, " + e.getMessage());
                 } finally {
                     try {
                         clientSocket.close();
@@ -190,9 +155,67 @@ public class ClientController implements Initializable {
         }
     }
 
-    public void sendMsg() {
+    private void event(Event event) {
+        if (event.getType().equals(Event.Type.info)) {
+            log.appInfo("connect", event.getMessage());
+        } else if (event.getType().equals(Event.Type.error)) {
+            log.appError("connect", event.getMessage());
+        }
+        eventField.setText(event.getType() + ": " + event.getMessage());
+    }
+
+    private void authentication() throws Exception {
+        Auth auth = new Auth(loginField.getText(), passwordField.getText());
+        out.writeUTF(gson.toJson(new Message("/auth", gson.toJson(auth))));
+        log.appInfo("authentication", "Пользователь " + auth.getLogin() + " пробует залогиниться");
+        loginField.clear();
+        passwordField.clear();
+        out.flush();
+    }
+
+    private void setAuthorised(boolean isAuthorised) {
+        this.isAuthorised = isAuthorised;
+        if (!isAuthorised) {
+            upperPan.setVisible(true);
+            upperPan.setManaged(true);
+            bottomPan.setVisible(false);
+            bottomPan.setManaged(false);
+            clientList.setVisible(false);
+            clientList.setManaged(false);
+        } else {
+            upperPan.setVisible(false);
+            upperPan.setManaged(false);
+            bottomPan.setVisible(true);
+            bottomPan.setManaged(true);
+            clientList.setVisible(true);
+            clientList.setManaged(true);
+            eventField.clear();
+        }
+    }
+
+    private void checkHistory() {
+        try {
+            List<String> historyMessages = worker.checkHistory();
+            for (String message : historyMessages) {
+                chatArea.appendText(message);
+            }
+        } catch (Exception e) {
+            log.appError("", "Ошибка считывания истории, " + e.getMessage());
+        }
+    }
+
+    private void updateClientList(String[] clients) {
+        Platform.runLater(() -> {
+            clientList.getItems().clear();
+            for (String client : clients) {
+                        clientList.getItems().add(client.replaceAll(" ", ""));
+                    }
+        });
+    }
+
+    public void sendMessage() {
         if (!msgField.getText().replaceAll(" ", "").equalsIgnoreCase("")) {
-            socketSend(gson.toJson(new Message("/newMessage", msgField.getText() + " \n")));
+            socketSend(gson.toJson(new Message("/newMessage", msgField.getText() + "\n")));
             msgField.clear();
             msgField.requestFocus();
         }

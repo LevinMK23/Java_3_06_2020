@@ -1,4 +1,4 @@
-package homework2.db;
+package homework.db;
 
 public class User {
     private int id;

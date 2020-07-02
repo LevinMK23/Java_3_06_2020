@@ -1,16 +1,16 @@
-package homework2.server;
+package homework.server;
 
-import homework2.utils.Logger;
-import homework2.api.Auth;
-import homework2.db.DBController;
-import homework2.db.SQLRequest;
-import homework2.db.User;
+import homework.utils.Logger;
+import homework.api.Auth;
+import homework.db.DBController;
+import homework.db.SQLRequest;
+import homework.db.User;
 
 import java.util.Objects;
 
 
 public class AuthService {
-    private final static Logger log = new Logger(Server.class);
+    private final static Logger log = new Logger(ServerWorker.class);
     private static DBController dbController = new DBController();
     private static SQLRequest request = new SQLRequest();
 

@@ -1,10 +1,10 @@
-package homework2.server;
+package homework.server;
 
 import com.google.gson.Gson;
-import homework2.api.Auth;
-import homework2.api.Event;
-import homework2.api.Message;
-import homework2.utils.Logger;
+import homework.api.Auth;
+import homework.api.Event;
+import homework.api.Message;
+import homework.utils.Logger;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 
-import static homework2.api.Event.Type.error;
+import static homework.api.Event.Type.error;
 
 public class ServerController {
-    private Server server;
+    private ServerWorker server;
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
@@ -31,13 +31,12 @@ public class ServerController {
         return userName;
     }
 
-    public ServerController(Server server, Socket socket) {
+    ServerController(ServerWorker server, Socket socket) {
         try {
             this.server = server;
             this.socket = socket;
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
-
             new Thread(() -> {
                 while (true) {
                     try {
@@ -54,14 +53,11 @@ public class ServerController {
                                                 userName = auth.getName();
                                                 log.appInfo("ServerController", "Пользователь " + login + " подключился");
                                                 subscribe(ServerController.this);
-                                                socketSend(gson.toJson(new Message("/newMessage", "Добро пожаловать в чат " + userName + "\n")));
                                                 socketSend(gson.toJson(new Message("/authOK", String.valueOf(true))));
-                                                broadcastMsg("Bot: " + userName + " входит в чат" + "\n");
                                             } else {
                                                 socketSend(gson.toJson(new Message("/newMessage", "Bot: Пользователь уже авторизован \n")));
                                             }
                                         } else {
-                                            broadcastMsg("Bot: Введены некорректные данные \n");
                                             socketSend(gson.toJson(new Message("/event", gson.toJson(new Event(error, "Введены некорректные данные для " + auth.getLogin())))));
                                         }
                                         break;
@@ -97,7 +93,7 @@ public class ServerController {
                             log.appError("ServerController", "Ошибка во время закрытия подключения с " + login + ", " + e.getMessage());
                         }
                         unsubscribe(ServerController.this);
-                        broadcastMsg("Bot: " + login + "@" + userName + " вышел из чата" + "\n");
+                        broadcastMsg("Bot: " + login + "@" + userName + " вышел из чата");
                     }
                 }
             }).start();

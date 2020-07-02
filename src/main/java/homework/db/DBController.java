@@ -1,6 +1,7 @@
-package homework2.db;
+package homework.db;
 
-import homework2.utils.Logger;
+import homework.utils.Logger;
+
 import org.sqlite.JDBC;
 
 import java.sql.Connection;

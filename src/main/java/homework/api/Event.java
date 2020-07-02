@@ -1,4 +1,4 @@
-package homework2.api;
+package homework.api;
 
 public class Event {
     private Type type;
@@ -29,7 +29,7 @@ public class Event {
         info("info"),
         error("error");
 
-        Type(String mode) {
+        Type(String type) {
         }
     }
 }

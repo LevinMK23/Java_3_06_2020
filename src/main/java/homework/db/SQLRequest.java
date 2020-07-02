@@ -1,4 +1,4 @@
-package homework2.db;
+package homework.db;
 
 public class SQLRequest {
     public String createTable() {

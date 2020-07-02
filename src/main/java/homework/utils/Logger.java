@@ -1,4 +1,4 @@
-package homework2.utils;
+package homework.utils;
 
 import org.apache.logging.log4j.LogManager;
 

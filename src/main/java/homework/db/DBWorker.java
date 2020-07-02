@@ -1,6 +1,6 @@
-package homework2.db;
+package homework.db;
 
-import homework2.utils.Logger;
+import homework.utils.Logger;
 
 import java.util.List;
 

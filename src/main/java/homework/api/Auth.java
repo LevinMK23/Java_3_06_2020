@@ -1,4 +1,4 @@
-package homework2.api;
+package homework.api;
 
 public class Auth {
     private String login;

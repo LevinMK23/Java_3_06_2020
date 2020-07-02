@@ -8,7 +8,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.ListView?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="homework2.client.ClientController">
+<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal" fx:controller="homework.client.ClientController">
 
         <HBox fx:id="upperPan">
             <TextField fx:id="loginField" promptText="Login.." HBox.hgrow="ALWAYS"/>
@@ -16,14 +16,16 @@
             <Button text="Enter" onAction="#login"/>
         </HBox>
 
+    <TextField fx:id="eventField" editable="false" HBox.hgrow="ALWAYS" />
+
     <HBox VBox.vgrow="ALWAYS">
         <VBox VBox.vgrow="ALWAYS">
             <TextArea fx:id="chatArea" editable="false" VBox.vgrow="ALWAYS" />
             <HBox fx:id="bottomPan" managed="false" visible="false">
                 <TextField fx:id="nameField" promptText="Write new name" HBox.hgrow="ALWAYS" />
                 <Button blendMode="DARKEN" onAction="#changeName" text="Change name" />
-                <TextField fx:id="msgField" onAction="#sendMsg" promptText="write your message..." HBox.hgrow="ALWAYS" />
-                <Button blendMode="DARKEN" onAction="#sendMsg" text="Send Message" />
+                <TextField fx:id="msgField" onAction="#sendMessage" promptText="write your message..." HBox.hgrow="ALWAYS" />
+                <Button blendMode="DARKEN" onAction="#sendMessage" text="Send Message" />
             </HBox>
         </VBox>
 
