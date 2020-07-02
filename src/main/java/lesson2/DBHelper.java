@@ -30,7 +30,8 @@ public class DBHelper {
         }
     }
 
-    public void insert(User user) throws SQLException {
+    public void insert(User user) throws SQLException , RuntimeException {
+
         String insertQuery = String.format("insert into users values(%d, %d, '%s', '%s');",
                 user.getId(), user.getAge(), user.getName(), user.getAddress());
         stmt.execute(insertQuery);
@@ -60,4 +61,5 @@ public class DBHelper {
         }
         return users;
     }
+
 }

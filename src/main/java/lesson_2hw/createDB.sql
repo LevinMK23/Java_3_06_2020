@@ -1,0 +1,13 @@
+CREATE SCHEMA `chat` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;
+CREATE TABLE `chat`.`users` (
+  `email` VARCHAR(30) NULL,
+  `login` VARCHAR(45) NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `password` INT NOT NULL,
+  `nick` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`));
+CREATE TABLE `messages`.`users`(
+`message` VARCHAR(100) NOT NULL,
+`id` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`)
+);

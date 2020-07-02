@@ -5,8 +5,8 @@ import sun.security.provider.SHA;
 import javax.swing.*;
 import java.awt.*;
 
-public class Auth extends JFrame {
-    public Auth() throws HeadlessException {
+public class AuthFrame extends JFrame {
+    public AuthFrame()  {
         setSize(300, 300);
         setLocation(300, 300);
         setVisible(true);
