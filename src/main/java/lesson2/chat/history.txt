@@ -1,0 +1,5 @@
+RA File
+message:{asfasfasf asf a sfas fas fas fa sf s fas faaafff}
+34:message:7:asf:34
+35:message:7:aaaaaa:35
+file.length()

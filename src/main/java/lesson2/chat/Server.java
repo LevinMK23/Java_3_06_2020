@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private ServerSocket srv;
@@ -31,12 +33,13 @@ public class Server {
         System.out.println("server started!");
         helper = new DBHelper();
         helper.connect();
+        ExecutorService service = Executors.newFixedThreadPool(10);
         while (true) {
             try {
                 Socket socket = srv.accept();
                 System.out.println("Client accepted!");
                 AuthHandler handler = new AuthHandler(this, socket);
-                new Thread(handler).start();
+                service.execute(handler);
             } catch (Exception e) {
                 e.printStackTrace();
             }
