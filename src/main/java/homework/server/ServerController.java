@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static homework.api.Event.Type.error;
 
@@ -37,7 +39,8 @@ public class ServerController {
             this.socket = socket;
             this.in = new DataInputStream(socket.getInputStream());
             this.out = new DataOutputStream(socket.getOutputStream());
-            new Thread(() -> {
+            ExecutorService service = Executors.newFixedThreadPool(5);
+            Runnable  task =  () -> {
                 while (true) {
                     try {
                         while (true) {
@@ -96,7 +99,8 @@ public class ServerController {
                         broadcastMsg("Bot: " + login + "@" + userName + " вышел из чата");
                     }
                 }
-            }).start();
+            };
+            service.submit(task);
         } catch (Exception e) {
             log.appError("ServerController", "Ошибка работы приложения, " + e.getMessage());
         }
