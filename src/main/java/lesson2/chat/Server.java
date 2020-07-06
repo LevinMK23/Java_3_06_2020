@@ -12,7 +12,9 @@ import java.util.concurrent.Executors;
 public class Server {
     private ServerSocket srv;
     private DBHelper helper;
+    private ConcurrentLinkedDeque<AuthHandler> clients = new ConcurrentLinkedDeque<>();
     private boolean isAuth = false;
+    private boolean isRunning = true;
 
     public DBHelper getHelper() {
         return helper;
@@ -34,15 +36,23 @@ public class Server {
         helper = new DBHelper();
         helper.connect();
         ExecutorService service = Executors.newFixedThreadPool(10);
-        while (true) {
+        while (isRunning) {
             try {
                 Socket socket = srv.accept();
                 System.out.println("Client accepted!");
                 AuthHandler handler = new AuthHandler(this, socket);
+                clients.add(handler);
                 service.execute(handler);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        service.shutdown();
+    }
+
+    public void broadCast(String message) throws IOException {
+        for(AuthHandler handler : clients) {
+            handler.sendMessage(message);
         }
     }
 

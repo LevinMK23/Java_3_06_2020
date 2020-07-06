@@ -33,14 +33,14 @@ public class AuthHandler implements Runnable {
             try {
                 String clientRequest = in.readUTF();
                 System.out.println("Client request: " + clientRequest);
-                String [] params = clientRequest.split(" ");
+                String[] params = clientRequest.split(" ");
                 String login = params[1];
                 String password = params[2];
                 User user = srv.getHelper().select(login);
                 if (user == null) {
                     out.writeUTF("user is not exists");
                     out.flush();
-                } else if (!user.getPassword().equals(password)){
+                } else if (!user.getPassword().equals(password)) {
                     out.writeUTF("wrong password");
                     out.flush();
                 } else {
@@ -53,6 +53,22 @@ public class AuthHandler implements Runnable {
             }
         }
 
+        while (true) {
+            String message = null;
+            try {
+                message = in.readUTF();
+                System.out.println("readed: " + message);
+                srv.broadCast(message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
         // Simple chat activity
+    }
+
+    public void sendMessage(String message) throws IOException {
+        out.writeUTF(message);
+        out.flush();
     }
 }

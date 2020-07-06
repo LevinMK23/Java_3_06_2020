@@ -35,7 +35,7 @@ public class Auth extends JFrame {
                 String response = in.readUTF();
                 label.setText(response);
                 if (response.equals("OK")) {
-                    new JFrame();
+                    new ChatMain(socket, in, out);
                     dispose();
                 }
             } catch (Exception e) {
