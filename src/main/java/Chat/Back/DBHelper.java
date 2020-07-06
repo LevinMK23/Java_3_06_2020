@@ -1,4 +1,7 @@
-package lesson_2hw;
+package Chat.Back;
+
+
+import Chat.User;
 
 import java.sql.*;
 import java.util.LinkedList;
@@ -39,20 +42,22 @@ public class DBHelper {
         }
         return messages;
     }
-    public User getUserByPassword(int hashPassword) throws SQLException {
+    public User getUser(int hashPassword,String login) throws SQLException {
         Statement statement=connection.createStatement();
-        String request = "select * from users where password=?";
+        String request = "select * from users where login=?";
         PreparedStatement preparedStatement=connection.prepareStatement(request);
-        preparedStatement.setInt(1,hashPassword);
+        preparedStatement.setString(1,login);
         User user =null ;
         ResultSet set=preparedStatement.executeQuery();
         while (set.next()){
-            String login=set.getString("login");
+            String login_=set.getString("login");
             String  email=set.getString("email");
             int password=set.getInt("password");
             String nick=set.getString("nick");
-            user=new User(login,email,password,nick);
+            user=new User(login,email,password,nick,User.correct);
         }
+        if (user==null)return new User(User.incorrect_login);
+        else if (hashPassword!=user.getHash_password())return new User(User.incorrect_password);
         return user;
 
     }

@@ -1,8 +1,10 @@
-package lesson_2hw;
+package Chat.Front;
+
 
 import javax.swing.*;
 import java.awt.*;
 import java.sql.SQLException;
+import Chat.User;
 
 public class ChatFrame extends JFrame {
     private TextField textField;
@@ -23,13 +25,9 @@ public class ChatFrame extends JFrame {
         send.addActionListener((actionEvent)->{
             String message =userInput.getText();
             userInput.setText("");
-            User user =chat.user;
+            User user =chat.getUser();
             message+="                  from:"+user.getNick_name();
-            try {
-                chat.getDataBase().sendMessage(message);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            chat.sendMessage(message);
 
         });
         this.add(textField,BorderLayout.CENTER);

@@ -1,8 +1,10 @@
 package lesson2;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class User {
+public class User implements Serializable {
     private int age, id;
     private String name, address;
 
