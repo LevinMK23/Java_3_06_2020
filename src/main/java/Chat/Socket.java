@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.io.*;
 
-@Data
 public  class Socket extends java.net.Socket {
    public final static String ip ="localhost";
    public final static  int port = 13013;
