@@ -78,6 +78,7 @@ public class ServerController {
                                         log.appError("ServerController", "Неизвестный запрос: " + message.getPath() + " - " + message.getBody());
                                         break;
                                 }
+                                log.appInfo("ServerController", "Получено сообщение: " + gson.toJson(message));
                             }
                         }
                     } catch (Exception e) {
@@ -127,6 +128,7 @@ public class ServerController {
     public void broadcastMsg(String msg) {
         for (ServerController o : clientsList) {
             o.socketSend(gson.toJson(new Message("/newMessage", msg + "\n")));
+            log.appInfo("broadcastMsg", "Отправлено сообщение в чат: " + msg);
         }
     }
 
