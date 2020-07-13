@@ -2,6 +2,8 @@ package lesson6;
 
 import org.apache.log4j.Logger;
 
+import java.util.Collections;
+
 public class A {
 
     B b;
@@ -13,6 +15,7 @@ public class A {
 
     @Override
     public String toString() {
+        // Collections.synchronizedMap()
         return "A{" +
                 "b=" + b +
                 '}';
